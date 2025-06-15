@@ -1,17 +1,23 @@
 <?php
-
 include("config.php");
 session_start();
 
-//destroy created session and redirect to login page
+// Unset all session variables
+$_SESSION = [];
 
-$_SESSION['login_user']=NULL;
-header("Location: /vulnerable/index.html");
+// Destroy the session
+session_destroy();
 
-?>
-<script>
-if(top != window) {
-  top.location = window.location
+// Remove session cookie
+if (ini_get("session.use_cookies")) {
+    $params = session_get_cookie_params();
+    setcookie(session_name(), '', time() - 42000,
+        $params["path"], $params["domain"],
+        $params["secure"], $params["httponly"]
+    );
 }
 
-</script>
+// Redirect to login page
+header("Location: /vulnerable/index.html");
+exit();
+?>
