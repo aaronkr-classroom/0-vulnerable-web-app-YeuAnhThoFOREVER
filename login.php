@@ -1,42 +1,32 @@
-
-
-<html>
- <head>
- testpage
- </head>
- <body>
- 
-
 <?php
+// login.php
+// ✅ SQL Injection vulnerability
+
 include("config.php");
 session_start();
-//get user input
-$a=$_POST['username'];
-$b=$_POST['passwd'];
-$query = "select * from register where username='$a' AND password='$b'";
 
-$result=mysqli_query($db, $query) or die('Error querying database.');
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
-//fetch from database
+    $query = "SELECT * FROM users WHERE username = '$username' AND password = '$password'";
+    $result = mysqli_query($conn, $query);
 
-
-if($row = mysqli_fetch_array($result)) {
- $_SESSION['login_user']=$row["username"];
-  header("Location: /vulnerable/settings.php");
+    if (mysqli_num_rows($result) > 0) {
+        $_SESSION['username'] = $username;
+        header("Location: settings.php");
+    } else {
+        echo "<p>Login failed</p>";
+    }
 }
-else
-{
-	echo 'not auhorized';
-	header("Location: /vulnerable/index.html");
-}
-//close database
-mysqli_close($db);
 ?>
-<script>
-if(top != window) {
-  top.location = window.location
-}
-
-</script>
+<html>
+<head><title>Login</title></head>
+<body>
+<form method="post">
+  Username: <input type="text" name="username"><br>
+  Password: <input type="password" name="password"><br>
+  <input type="submit" value="Login">
+</form>
 </body>
 </html>
