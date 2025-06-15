@@ -2,62 +2,47 @@
 include("config.php");
 session_start();
 
-//get post parameters
-
-$user=$_POST['username'];
-$old=$_POST['oldpasswd'];
-$new=$_POST['newpasswd'];
-
-
-//check session else redirect to login page
-$check=$_SESSION['login_user'];
-if($check==NULL)
-{
-	header("Location: /vulnerable/index.html");
+if (!isset($_SESSION['login_user'])) {
+    header("Location: /vulnerable/index.html");
+    exit();
 }
 
-//check values else redirect to settings page
-if($check!=NULL && ($user==NULL || $old==NULL || $new==NULL) )
-{
-header("Location: /vulnerable/settings.php");	
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die("CSRF token validation failed.");
+    }
+
+    $user = trim($_POST['username']);
+    $old = trim($_POST['oldpasswd']);
+    $new = trim($_POST['newpasswd']);
+
+    if (empty($user) || empty($old) || empty($new)) {
+        header("Location: /vulnerable/settings.php");
+        exit();
+    }
+
+    $old_hashed = hash('sha256', $old);
+    $new_hashed = hash('sha256', $new);
+
+    $stmt = $db->prepare("UPDATE register SET password = ? WHERE username = ? AND password = ?");
+    $stmt->bind_param("sss", $new_hashed, $user, $old_hashed);
+    $stmt->execute();
+
+    if ($stmt->affected_rows > 0) {
+        $msg = "Password updated successfully.";
+    } else {
+        $msg = "Incorrect password or username.";
+    }
+
+    $stmt->close();
+    mysqli_close($db);
 }
-
-
-
-
-//update password 
-
-$sql="UPDATE register set password='$new' where username='$user' AND password='$old'";
-
-echo $sql;
-echo "</br>";
-
-$result=mysqli_query($db, $sql) or die('Error querying database.');
-
-if( mysqli_affected_rows($db)>0)
-{
-echo "<h2>Password updated successfully</h2>";
-}
-else {
-	echo "<h2>Incorrect Password</h2>";
-}
-
-
-mysqli_close($db);
-
-
 ?>
-
+<!DOCTYPE html>
 <html>
-<body>
-</br>
-
-<script>
-if(top != window) {
-  top.location = window.location
-}
-
-</script>
-<a href="/vulnerable/settings.php" > <h3>Go back</h3> </a>
+<head><meta http-equiv="X-Frame-Options" content="DENY"></head>
+<body><br>
+<h2><?php echo htmlspecialchars($msg); ?></h2>
+<a href="/vulnerable/settings.php"><h3>Go back</h3></a>
 </body>
 </html>

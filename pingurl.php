@@ -1,32 +1,29 @@
 <?php
 include("config.php");
 session_start();
-//get parameter
 
-$url=$_POST['url'];
-
-//check session else redirect to login page
-
-$check=$_SESSION['login_user'];
-if($check==NULL )
-{
-	header("Location: /vulnerable/index.html");
+if (!isset($_SESSION['login_user'])) {
+    header("Location: /vulnerable/index.html");
+    exit();
 }
 
-
-//check values else redirect to settings page
-if($check!=NULL && $url==NULL  )
-{
-header("Location: /vulnerable/settings.php");	
+if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+    die("CSRF token validation failed.");
 }
 
-echo "<h1>Result from Vulnerable server</h1>";
+$url = trim($_POST['url']);
+if (empty($url)) {
+    header("Location: /vulnerable/settings.php");
+    exit();
+}
 
-echo system("ping $url");
+if (!preg_match('/^[a-zA-Z0-9\.\-]+$/', $url)) {
+    die("Invalid hostname or IP address.");
+}
+
+echo "<!DOCTYPE html><html><head><meta http-equiv='X-Frame-Options' content='DENY'></head><body>";
+echo "<h1>Result from Secure Server</h1>";
+$escaped = escapeshellarg($url);
+system("ping -c 4 $escaped");
+echo "</body></html>";
 ?>
-<script>
-if(top != window) {
-  top.location = window.location
-}
-
-</script>
