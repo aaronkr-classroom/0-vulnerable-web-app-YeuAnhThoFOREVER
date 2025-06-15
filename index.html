@@ -1,38 +1,44 @@
-<html>
-<title>Vulnerable web application </title>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vulnerable Web Application</title>
+</head>
 <body>
-
 <script>
-if(top != window) {
-  top.location = window.location
+if (top !== window) {
+  top.location = window.location;
 }
-
 </script>
-  <center>
-  <h1> WEB Application security </h1>
-  <h2> Vulnerable WEB Application </h2>
-<h3> Registration form</h3>
-<form action="register.php" method="POST">
 
-Username: <input type="text" name="username" value=""> </br>
-Password: <input type="password" name="passwd" value=""></br>
-Email: <input type="email" name="email" value=""></br>
-Gender : <input type="radio" name="gender" value="male"> Male <input type="radio" name="gender" value="female"> Female
+<center>
+  <h1>WEB Application Security</h1>
+  <h2>Vulnerable Web Application</h2>
 
-<input type="submit" name="register" value="register">
-</form>
-<h3> Login form</h3>
-<form action="login.php" method="POST">
+  <h3>Registration Form</h3>
+  <form action="register.php" method="POST" autocomplete="off">
+    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+    Username: <input type="text" name="username" required><br><br>
+    Password: <input type="password" name="passwd" required><br><br>
+    Email: <input type="email" name="email" required><br><br>
+    Gender:
+    <input type="radio" name="gender" value="male" required> Male
+    <input type="radio" name="gender" value="female"> Female<br><br>
+    <input type="submit" name="register" value="Register">
+  </form>
 
-Username: <input type="text" name="username" value=""> </br>
-Password: <input type="password" name="passwd" value=""></br>
-<input type="submit" name="login" value="login">
-</form>
+  <h3>Login Form</h3>
+  <form action="login.php" method="POST" autocomplete="off">
+    <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
+    Username: <input type="text" name="username" required><br><br>
+    Password: <input type="password" name="passwd" required><br><br>
+    <input type="submit" name="login" value="Login">
+  </form>
 
-</br>
-<a href="forgotpassword.html" >Forgot Password </a>
-
+  <br>
+  <a href="forgotpassword.html">Forgot Password?</a>
 </center>
 </body>
 </html>
-
